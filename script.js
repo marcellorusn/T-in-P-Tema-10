@@ -1,53 +1,55 @@
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const mesaj = document.getElementById("mesaj");
+let stare = "start"; 
+let startTimp;
+let reactionTimp;
+let timerID;
 
-let startTime = 0;
-let asteaptaVerde = false;
-let poateClick = false;
-let timer;
-
-// funcție care colorează canvasul
-function deseneazaCuloare(culoare) {
-  ctx.fillStyle = culoare;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+function setup() {
+  createCanvas(600, 400);
+  textAlign(CENTER, CENTER);
+  textSize(24);
 }
 
-// când dai click pe canvas
-canvas.addEventListener("click", () => {
-  if (!asteaptaVerde && !poateClick) {
-    // prima apăsare → începem jocul
-    mesaj.textContent = "Așteaptă culoarea verde...";
-    deseneazaCuloare("gray");
+function draw() {
+  background(255);
 
-    asteaptaVerde = true;
-
-    let timpRandom = Math.random() * 3000 + 2000; // între 2 și 5 secunde
-
-    timer = setTimeout(() => {
-      deseneazaCuloare("green");
-      mesaj.textContent = "Click ACUM!";
-      startTime = Date.now();
-      poateClick = true;
-      asteaptaVerde = false;
-    }, timpRandom);
-  } else if (poateClick) {
-    let timp = Date.now() - startTime;
-    mesaj.textContent = "Bravo! Timp: " + timp + " ms";
-    deseneazaCuloare("white");
-    poateClick = false;
-  } else if (asteaptaVerde) {
-    clearTimeout(timer);
-    mesaj.textContent = "Prea devreme! Încearcă din nou.";
-    deseneazaCuloare("red");
-    asteaptaVerde = false;
-  } else {
-    // reset
-    mesaj.textContent = "Click pe canvas pentru a începe";
-    deseneazaCuloare("white");
+  if (stare === "start") {
+    fill(0);
+    text("Click pentru a începe", width / 2, height / 2);
+  } else if (stare === "asteapta") {
+    background(180);
+    fill(0);
+    text("Așteaptă verde...", width / 2, height / 2);
+  } else if (stare === "verde") {
+    background("green");
+    fill(255);
+    text("Click ACUM!", width / 2, height / 2);
+  } else if (stare === "preaDevreme") {
+    background("red");
+    fill(255);
+    text("Prea devreme! Click pentru a relua", width / 2, height / 2);
+  } else if (stare === "final") {
+    background(200);
+    fill(0);
+    text("Timp reacție: " + reactionTimp + " ms", width / 2, height / 2);
+    text("Click pentru a relua", width / 2, height / 2 + 40);
   }
-});
+}
 
-// inițial, canvasul e alb
-deseneazaCuloare("white");
-
+function mousePressed() {
+  if (stare === "start") {
+    stare = "asteapta";
+    let t = random(2000, 5000);
+    timerID = setTimeout(() => {
+      stare = "verde";
+      startTimp = millis();
+    }, t);
+  } else if (stare === "asteapta") {
+    clearTimeout(timerID);
+    stare = "preaDevreme";
+  } else if (stare === "verde") {
+    reactionTimp = int(millis() - startTimp);
+    stare = "final";
+  } else {
+    stare = "start";
+  }
+}
